@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS public.purchases (
 CREATE TABLE IF NOT EXISTS public.purchased_items (
     item_id SERIAL PRIMARY KEY,
     purchase_id INTEGER NOT NULL REFERENCES public.purchases(purchase_id) ON DELETE CASCADE,
-    product_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL REFERENCES public.products(product_id),
     name VARCHAR(32) NOT NULL,
     category VARCHAR(50) NOT NULL,
     qty INTEGER NOT NULL,
