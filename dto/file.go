@@ -1,4 +1,13 @@
 package dto
 
-type File struct {
+type FileData struct {
+}
+
+type FileFilter struct {
+}
+
+type FileReq struct {
+}
+
+type UpdateFileReq struct {
 }

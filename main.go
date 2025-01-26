@@ -18,10 +18,17 @@ func main() {
 	authService := service.NewUser(cnf, userRepository)
 	api.NewUser(app, authService)
 
-	departmentRepository := repository.NewActivity(dbConnection)
-	activityTypesRepository := repository.NewActivityType(dbConnection)
-	departmentService := service.NewActivity(cnf, departmentRepository, activityTypesRepository)
-	api.NewActivity(app, departmentService)
+	productRepository := repository.NewProduct(dbConnection)
+	productService := service.NewProduct(cnf, productRepository)
+	api.NewProduct(app, productService)
+
+	purchaseRepository := repository.NewPurchase(dbConnection)
+	purchaseService := service.NewPurchase(cnf, purchaseRepository)
+	api.NewPurchase(app, purchaseService)
+
+	purchasedItemRepository := repository.NewPurchasedItem(dbConnection)
+	purchasedItemService := service.NewPurchasedItem(cnf, purchasedItemRepository)
+	api.NewPurchasedItem(app, purchasedItemService)
 
 	api.NewAws(app)
 

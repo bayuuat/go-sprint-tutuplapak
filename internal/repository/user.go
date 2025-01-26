@@ -13,6 +13,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user *domain.User) error
 	FindById(ctx context.Context, id string) (domain.User, error)
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
+	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 }
 
 type userRepository struct {
@@ -48,6 +49,14 @@ func (u userRepository) FindById(ctx context.Context, id string) (user domain.Us
 func (u userRepository) FindByEmail(ctx context.Context, email string) (user domain.User, err error) {
 	dataset := u.db.From("users").Where(goqu.Ex{
 		"email": email,
+	})
+	_, err = dataset.ScanStructContext(ctx, &user)
+	return
+}
+
+func (u userRepository) FindByPhone(ctx context.Context, phone string) (user domain.User, err error) {
+	dataset := u.db.From("users").Where(goqu.Ex{
+		"phone": phone,
 	})
 	_, err = dataset.ScanStructContext(ctx, &user)
 	return

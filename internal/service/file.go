@@ -21,8 +21,7 @@ type FileService interface {
 }
 
 func NewFile(cnf *config.Config,
-	fileRepository repository.FileRepository,
-	fileTypesRepository repository.FileTypesRepository) FileService {
+	fileRepository repository.FileRepository) FileService {
 	return &fileService{
 		cnf:            cnf,
 		fileRepository: fileRepository,
@@ -30,17 +29,17 @@ func NewFile(cnf *config.Config,
 }
 
 func (ds fileService) GetFilesWithFilter(ctx context.Context, filter dto.FileFilter, userId string) ([]dto.FileData, int, error) {
-	return nil, nil, nil
+	return []dto.FileData{}, 200, nil
 }
 
 func (ds *fileService) CreateFile(ctx context.Context, req dto.FileReq, userId string) (dto.FileData, int, error) {
-	return nil, nil, nil
+	return dto.FileData{}, 200, nil
 }
 
 func (ds fileService) PatchFile(ctx context.Context, req dto.UpdateFileReq, userId, id string) (dto.FileData, int, error) {
-	return nil, nil, nil
+	return dto.FileData{}, 200, nil
 }
 
 func (ds fileService) DeleteFile(ctx context.Context, userId, id string) (dto.FileData, int, error) {
-	return nil, nil, nil
+	return dto.FileData{}, 200, nil
 }

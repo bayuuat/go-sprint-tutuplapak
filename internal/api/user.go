@@ -24,8 +24,9 @@ func NewUser(app *fiber.App, authService service.UserService) {
 		authService: authService,
 	}
 
+	app.Post("/v1/register/email", ha.registerEmail)
+	app.Post("/v1/register/phone", ha.registerPhone)
 	app.Post("/v1/login", ha.login)
-	app.Post("/v1/register", ha.register)
 
 	user := app.Group("/v1/user")
 
@@ -38,7 +39,7 @@ func (a authApi) login(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
-	var req dto.AuthReq
+	var req dto.AuthEmailReq
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.SendStatus(http.StatusBadRequest)
 	}
@@ -47,7 +48,7 @@ func (a authApi) login(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
-	res, code, err := a.authService.Login(c, req)
+	res, code, err := a.authService.LoginEmail(c, req)
 
 	if err != nil {
 		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
@@ -56,11 +57,11 @@ func (a authApi) login(ctx *fiber.Ctx) error {
 	return ctx.Status(code).JSON(res)
 }
 
-func (a authApi) register(ctx *fiber.Ctx) error {
+func (a authApi) registerEmail(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
-	var req dto.AuthReq
+	var req dto.AuthEmailReq
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.SendStatus(http.StatusBadRequest)
 	}
@@ -69,7 +70,29 @@ func (a authApi) register(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
-	res, code, err := a.authService.Register(c, req)
+	res, code, err := a.authService.RegisterEmail(c, req)
+
+	if err != nil {
+		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
+	}
+
+	return ctx.Status(code).JSON(res)
+}
+
+func (a authApi) registerPhone(ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	defer cancel()
+
+	var req dto.AuthPhoneReq
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	if err := utils.Validate(req); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
+	}
+
+	res, code, err := a.authService.RegisterPhone(c, req)
 
 	if err != nil {
 		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
@@ -104,7 +127,7 @@ func (a authApi) UpdateUser(ctx *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	id := claims["id"].(string)
 
-	var req dto.UpdateUserPreferences
+	var req dto.UpdateUser
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.SendStatus(http.StatusBadRequest)
 	}

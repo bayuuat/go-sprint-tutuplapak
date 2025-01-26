@@ -21,8 +21,7 @@ type ProductService interface {
 }
 
 func NewProduct(cnf *config.Config,
-	productRepository repository.ProductRepository,
-	productTypesRepository repository.ProductTypesRepository) ProductService {
+	productRepository repository.ProductRepository) ProductService {
 	return &productService{
 		cnf:               cnf,
 		productRepository: productRepository,
@@ -30,17 +29,17 @@ func NewProduct(cnf *config.Config,
 }
 
 func (ds productService) GetProductsWithFilter(ctx context.Context, filter dto.ProductFilter, userId string) ([]dto.ProductData, int, error) {
-	return nil, nil, nil
+	return []dto.ProductData{}, 200, nil
 }
 
 func (ds *productService) CreateProduct(ctx context.Context, req dto.ProductReq, userId string) (dto.ProductData, int, error) {
-	return nil, nil, nil
+	return dto.ProductData{}, 200, nil
 }
 
 func (ds productService) PatchProduct(ctx context.Context, req dto.UpdateProductReq, userId, id string) (dto.ProductData, int, error) {
-	return nil, nil, nil
+	return dto.ProductData{}, 200, nil
 }
 
 func (ds productService) DeleteProduct(ctx context.Context, userId, id string) (dto.ProductData, int, error) {
-	return nil, nil, nil
+	return dto.ProductData{}, 200, nil
 }
