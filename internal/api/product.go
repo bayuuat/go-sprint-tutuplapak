@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/bayuuat/tutuplapak/dto"
 	"time"
+
+	"github.com/bayuuat/tutuplapak/dto"
 
 	"github.com/bayuuat/tutuplapak/internal/middleware"
 	"github.com/bayuuat/tutuplapak/internal/service"
@@ -45,7 +46,7 @@ func (da productApi) CreateProduct(ctx *fiber.Ctx) error {
 }
 
 func (da productApi) UpdateProduct(ctx *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	q := ctx.Query("id")
@@ -67,7 +68,7 @@ func (da productApi) UpdateProduct(ctx *fiber.Ctx) error {
 }
 
 func (da productApi) DeleteProduct(ctx *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	_, code, err := da.productService.DeleteProduct(c, "change this", "change this")

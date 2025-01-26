@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/bayuuat/tutuplapak/dto"
@@ -55,9 +56,11 @@ func (a userService) RegisterEmail(ctx context.Context, req dto.AuthEmailReq) (d
 	}
 
 	newUser := domain.User{
-		Id:       uuid.New().String(),
-		Email:    &req.Email,
-		Password: string(hashedPassword),
+		Id:        uuid.New().String(),
+		Email:     &req.Email,
+		Password:  string(hashedPassword),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err = a.userRepository.Save(ctx, &newUser)
@@ -75,54 +78,10 @@ func (a userService) RegisterEmail(ctx context.Context, req dto.AuthEmailReq) (d
 		return dto.AuthResponse{}, http.StatusInternalServerError, err
 	}
 
+	emptyPhone := ""
 	return dto.AuthResponse{
-		Email: *user.Email,
-		Phone: nil,
-		Token: token,
-	}, http.StatusCreated, nil
-}
-
-func (a userService) RegisterPhone(ctx context.Context, req dto.AuthPhoneReq) (dto.AuthResponse, int, error) {
-	user, err := a.userRepository.FindByPhone(ctx, req.Phone)
-	if err != nil && err != sql.ErrNoRows {
-		slog.ErrorContext(ctx, err.Error())
-		return dto.AuthResponse{}, http.StatusInternalServerError, err
-	}
-
-	if user.Id != "" {
-		return dto.AuthResponse{}, http.StatusConflict, domain.ErrEmailExists
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		slog.ErrorContext(ctx, err.Error())
-		return dto.AuthResponse{}, http.StatusInternalServerError, err
-	}
-
-	newUser := domain.User{
-		Id:       uuid.New().String(),
-		Phone:    &req.Phone,
-		Password: string(hashedPassword),
-	}
-
-	err = a.userRepository.Save(ctx, &newUser)
-	if err != nil {
-		slog.ErrorContext(ctx, err.Error())
-		return dto.AuthResponse{}, http.StatusInternalServerError, err
-	}
-
-	user = newUser
-
-	token, err := utils.GenerateToken(user)
-
-	if err != nil {
-		slog.ErrorContext(ctx, err.Error())
-		return dto.AuthResponse{}, http.StatusInternalServerError, err
-	}
-
-	return dto.AuthResponse{
-		Email: *user.Email,
-		Phone: *user.Phone,
+		Email: user.Email,
+		Phone: &emptyPhone,
 		Token: token,
 	}, http.StatusCreated, nil
 }
@@ -149,14 +108,66 @@ func (a userService) LoginEmail(ctx context.Context, req dto.AuthEmailReq) (dto.
 		return dto.AuthResponse{}, http.StatusInternalServerError, err
 	}
 
+	phone := ""
+	if user.Phone != nil {
+		phone = *user.Phone
+	}
+
 	return dto.AuthResponse{
-		Email: *user.Email,
+		Email: user.Email,
+		Phone: &phone,
 		Token: token,
 	}, http.StatusOK, nil
 }
 
+func (a userService) RegisterPhone(ctx context.Context, req dto.AuthPhoneReq) (dto.AuthResponse, int, error) {
+	user, err := a.userRepository.FindByPhone(ctx, req.Phone)
+	if err != nil && err != sql.ErrNoRows {
+		slog.ErrorContext(ctx, err.Error())
+		return dto.AuthResponse{}, http.StatusInternalServerError, err
+	}
+
+	if user.Id != "" {
+		return dto.AuthResponse{}, http.StatusConflict, domain.ErrPhoneExists
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return dto.AuthResponse{}, http.StatusInternalServerError, err
+	}
+
+	newUser := domain.User{
+		Id:        uuid.New().String(),
+		Phone:     &req.Phone,
+		Password:  string(hashedPassword),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	err = a.userRepository.Save(ctx, &newUser)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return dto.AuthResponse{}, http.StatusInternalServerError, err
+	}
+
+	token, err := utils.GenerateToken(user)
+
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return dto.AuthResponse{}, http.StatusInternalServerError, err
+	}
+
+	emptyEmail := ""
+	return dto.AuthResponse{
+		Email: &emptyEmail,
+		Phone: newUser.Phone,
+		Token: token,
+	}, http.StatusCreated, nil
+}
+
 func (a userService) LoginPhone(ctx context.Context, req dto.AuthPhoneReq) (dto.AuthResponse, int, error) {
-	user, err := a.userRepository.FindByEmail(ctx, req.Phone)
+	user, err := a.userRepository.FindByPhone(ctx, req.Phone)
 	if err != nil && err != sql.ErrNoRows {
 		slog.ErrorContext(ctx, err.Error())
 		return dto.AuthResponse{}, http.StatusInternalServerError, err
@@ -177,8 +188,14 @@ func (a userService) LoginPhone(ctx context.Context, req dto.AuthPhoneReq) (dto.
 		return dto.AuthResponse{}, http.StatusInternalServerError, err
 	}
 
+	email := ""
+	if user.Email != nil {
+		email = *user.Email
+	}
+
 	return dto.AuthResponse{
-		Email: *user.Email,
+		Email: &email,
+		Phone: user.Phone,
 		Token: token,
 	}, http.StatusOK, nil
 }

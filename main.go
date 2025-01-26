@@ -18,10 +18,6 @@ func main() {
 	authService := service.NewUser(cnf, userRepository)
 	api.NewUser(app, authService)
 
-	productRepository := repository.NewProduct(dbConnection)
-	productService := service.NewProduct(cnf, productRepository)
-	api.NewProduct(app, productService)
-
 	purchaseRepository := repository.NewPurchase(dbConnection)
 	purchaseService := service.NewPurchase(cnf, purchaseRepository)
 	api.NewPurchase(app, purchaseService)
@@ -32,6 +28,11 @@ func main() {
 
 	fileRepository := repository.NewFile(dbConnection)
 	fileService := service.NewFile(cnf, fileRepository)
+
+	productRepository := repository.NewProduct(dbConnection)
+	productService := service.NewProductServicer(cnf, productRepository, fileService)
+	api.NewProduct(app, productService)
+
 	api.NewAws(app)
 
 	_ = app.Listen(cnf.Server.Host + ":" + cnf.Server.Port)

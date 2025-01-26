@@ -13,7 +13,7 @@ import (
 type PurchasedItemRepository interface {
 	Save(ctx context.Context, purchasedItem *domain.PurchasedItem) (*domain.PurchasedItem, error)
 	Update(ctx context.Context, userId string, purchasedItem goqu.Record) error
-	FindAllWithFilter(ctx context.Context, filter, userId string) ([]domain.PurchasedItem, error)
+	FindAllWithFilter(ctx context.Context, filter *dto.PurchasedItemFilter, userId string) ([]domain.PurchasedItem, error)
 	FindById(ctx context.Context, userId, id string) (domain.PurchasedItem, error)
 	Delete(ctx context.Context, userId, id string) error
 }

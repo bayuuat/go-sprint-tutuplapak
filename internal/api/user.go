@@ -24,9 +24,10 @@ func NewUser(app *fiber.App, authService service.UserService) {
 		authService: authService,
 	}
 
-	app.Post("/v1/register/email", ha.registerEmail)
-	app.Post("/v1/register/phone", ha.registerPhone)
-	app.Post("/v1/login", ha.login)
+	app.Post("/v1/register/email", ha.RegisterEmail)
+	app.Post("/v1/login/email", ha.LoginEmail)
+	app.Post("/v1/register/phone", ha.RegisterPhone)
+	app.Post("/v1/login/phone", ha.LoginPhone)
 
 	user := app.Group("/v1/user")
 
@@ -35,29 +36,7 @@ func NewUser(app *fiber.App, authService service.UserService) {
 	user.Patch("/", ha.UpdateUser)
 }
 
-func (a authApi) login(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
-	defer cancel()
-
-	var req dto.AuthEmailReq
-	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.SendStatus(http.StatusBadRequest)
-	}
-
-	if err := utils.Validate(req); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
-	}
-
-	res, code, err := a.authService.LoginEmail(c, req)
-
-	if err != nil {
-		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
-	}
-
-	return ctx.Status(code).JSON(res)
-}
-
-func (a authApi) registerEmail(ctx *fiber.Ctx) error {
+func (a authApi) RegisterEmail(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
@@ -79,7 +58,29 @@ func (a authApi) registerEmail(ctx *fiber.Ctx) error {
 	return ctx.Status(code).JSON(res)
 }
 
-func (a authApi) registerPhone(ctx *fiber.Ctx) error {
+func (a authApi) LoginEmail(ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	defer cancel()
+
+	var req dto.AuthEmailReq
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	if err := utils.Validate(req); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
+	}
+
+	res, code, err := a.authService.LoginEmail(c, req)
+
+	if err != nil {
+		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
+	}
+
+	return ctx.Status(code).JSON(res)
+}
+
+func (a authApi) RegisterPhone(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
@@ -93,6 +94,28 @@ func (a authApi) registerPhone(ctx *fiber.Ctx) error {
 	}
 
 	res, code, err := a.authService.RegisterPhone(c, req)
+
+	if err != nil {
+		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
+	}
+
+	return ctx.Status(code).JSON(res)
+}
+
+func (a authApi) LoginPhone(ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	defer cancel()
+
+	var req dto.AuthPhoneReq
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	if err := utils.Validate(req); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
+	}
+
+	res, code, err := a.authService.LoginPhone(c, req)
 
 	if err != nil {
 		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
