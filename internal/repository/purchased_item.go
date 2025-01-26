@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
+	"github.com/bayuuat/tutuplapak/dto"
 	"github.com/doug-martin/goqu/v9"
 )
 
@@ -27,21 +29,21 @@ func NewPurchasedItem(db *sql.DB) PurchasedItemRepository {
 }
 
 func (d purchasedItemRepository) Save(ctx context.Context, purchasedItem *domain.PurchasedItem) (*domain.PurchasedItem, error) {
-	return &domain.PurchasedItem{}, nil
+	return &domain.PurchasedItem{}, errors.New("not implemented")
 }
 
 func (d purchasedItemRepository) Update(ctx context.Context, userId string, purchasedItem goqu.Record) error {
-	return nil
+	return errors.New("not implemented")
 }
 
 func (d purchasedItemRepository) FindById(ctx context.Context, userId, id string) (purchasedItem domain.PurchasedItem, err error) {
-	return domain.PurchasedItem{}, nil
+	return domain.PurchasedItem{}, errors.New("not implemented")
 }
 
 func (d purchasedItemRepository) Delete(ctx context.Context, userId, id string) error {
-	return nil
+	return errors.New("not implemented")
 }
 
-func (d purchasedItemRepository) FindAllWithFilter(ctx context.Context, filter, userId string) ([]domain.PurchasedItem, error) {
-	return []domain.PurchasedItem{}, nil
+func (d purchasedItemRepository) FindAllWithFilter(ctx context.Context, filter *dto.PurchasedItemFilter, userId string) ([]domain.PurchasedItem, error) {
+	return []domain.PurchasedItem{}, errors.New("not implemented")
 }

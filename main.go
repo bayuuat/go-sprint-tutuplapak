@@ -30,6 +30,8 @@ func main() {
 	purchasedItemService := service.NewPurchasedItem(cnf, purchasedItemRepository)
 	api.NewPurchasedItem(app, purchasedItemService)
 
+	fileRepository := repository.NewFile(dbConnection)
+	fileService := service.NewFile(cnf, fileRepository)
 	api.NewAws(app)
 
 	_ = app.Listen(cnf.Server.Host + ":" + cnf.Server.Port)

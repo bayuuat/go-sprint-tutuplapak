@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/doug-martin/goqu/v9"
@@ -10,10 +11,10 @@ import (
 
 type PurchaseRepository interface {
 	Save(ctx context.Context, purchase *domain.Purchase) (*domain.Purchase, error)
-	Update(ctx context.Context, userId string, purchase goqu.Record) error
-	FindAllWithFilter(ctx context.Context, filter, userId string) ([]domain.Purchase, error)
-	FindById(ctx context.Context, userId, id string) (domain.Purchase, error)
-	Delete(ctx context.Context, userId, id string) error
+	Update(ctx context.Context, purchase goqu.Record) error
+	FindAllWithFilter(ctx context.Context) ([]domain.Purchase, error)
+	FindById(ctx context.Context, id string) (domain.Purchase, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type purchaseRepository struct {
@@ -27,21 +28,21 @@ func NewPurchase(db *sql.DB) PurchaseRepository {
 }
 
 func (d purchaseRepository) Save(ctx context.Context, purchase *domain.Purchase) (*domain.Purchase, error) {
-	return &domain.Purchase{}, nil
+	return &domain.Purchase{}, errors.New("not implemented")
 }
 
-func (d purchaseRepository) Update(ctx context.Context, userId string, purchase goqu.Record) error {
-	return nil
+func (d purchaseRepository) Update(ctx context.Context, purchase goqu.Record) error {
+	return errors.New("not implemented")
 }
 
-func (d purchaseRepository) FindById(ctx context.Context, userId, id string) (purchase domain.Purchase, err error) {
-	return domain.Purchase{}, nil
+func (d purchaseRepository) FindById(ctx context.Context, id string) (purchase domain.Purchase, err error) {
+	return domain.Purchase{}, errors.New("not implemented")
 }
 
-func (d purchaseRepository) Delete(ctx context.Context, userId, id string) error {
-	return nil
+func (d purchaseRepository) Delete(ctx context.Context, id string) error {
+	return errors.New("not implemented")
 }
 
-func (d purchaseRepository) FindAllWithFilter(ctx context.Context, filter, userId string) ([]domain.Purchase, error) {
-	return []domain.Purchase{}, nil
+func (d purchaseRepository) FindAllWithFilter(ctx context.Context) ([]domain.Purchase, error) {
+	return []domain.Purchase{}, errors.New("not implemented")
 }
