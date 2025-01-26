@@ -21,8 +21,7 @@ type PurchasedItemService interface {
 }
 
 func NewPurchasedItem(cnf *config.Config,
-	purchasedItemRepository repository.PurchasedItemRepository,
-	purchasedItemTypesRepository repository.PurchasedItemTypesRepository) PurchasedItemService {
+	purchasedItemRepository repository.PurchasedItemRepository) PurchasedItemService {
 	return &purchasedItemService{
 		cnf:                     cnf,
 		purchasedItemRepository: purchasedItemRepository,
@@ -30,17 +29,17 @@ func NewPurchasedItem(cnf *config.Config,
 }
 
 func (ds purchasedItemService) GetPurchasedItemsWithFilter(ctx context.Context, filter dto.PurchasedItemFilter, userId string) ([]dto.PurchasedItemData, int, error) {
-	return nil, nil, nil
+	return []dto.PurchasedItemData{}, 200, nil
 }
 
 func (ds *purchasedItemService) CreatePurchasedItem(ctx context.Context, req dto.PurchasedItemReq, userId string) (dto.PurchasedItemData, int, error) {
-	return nil, nil, nil
+	return dto.PurchasedItemData{}, 200, nil
 }
 
 func (ds purchasedItemService) PatchPurchasedItem(ctx context.Context, req dto.UpdatePurchasedItemReq, userId, id string) (dto.PurchasedItemData, int, error) {
-	return nil, nil, nil
+	return dto.PurchasedItemData{}, 200, nil
 }
 
 func (ds purchasedItemService) DeletePurchasedItem(ctx context.Context, userId, id string) (dto.PurchasedItemData, int, error) {
-	return nil, nil, nil
+	return dto.PurchasedItemData{}, 200, nil
 }

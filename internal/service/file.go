@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/bayuuat/tutuplapak/dto"
 	"github.com/bayuuat/tutuplapak/internal/config"
@@ -46,7 +47,7 @@ func (ds FileService) DeleteFile(ctx context.Context, userId, id string) (dto.Fi
 }
 
 func (ds FileService) GetFileId(ctx context.Context, id string) (domain.File, error) {
-	file, err := ds.fileRepository.FindById(ctx, "", id)
+	file, err := ds.fileRepository.FindById(ctx, id)
 	if err != nil {
 		return domain.File{}, err
 	}

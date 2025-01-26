@@ -2,15 +2,16 @@ package utils
 
 import (
 	"fmt"
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
-	enTranslations "github.com/go-playground/validator/v10/translations/en"
 	"net"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
 
 var (
@@ -29,6 +30,7 @@ func init() {
 	validate.RegisterValidation("accessibleuri", validateAccessibleURI)
 	validate.RegisterValidation("rfc3339", validateRFC3339)
 	validate.RegisterValidation("isodate", validateIsoDate)
+	validate.RegisterValidation("phonenumber", validatePhoneNumber)
 }
 
 func Validate[T any](data T) map[string]string {
@@ -86,4 +88,10 @@ func validateIsoDate(tl validator.FieldLevel) bool {
 func validateRFC3339(fl validator.FieldLevel) bool {
 	_, err := time.Parse(time.RFC3339Nano, fl.Field().String())
 	return err == nil
+}
+
+func validatePhoneNumber(fl validator.FieldLevel) bool {
+	phoneNumber := fl.Field().String()
+	phoneRegex := regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
+	return phoneRegex.MatchString(phoneNumber)
 }

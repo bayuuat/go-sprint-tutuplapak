@@ -1,6 +1,9 @@
 package dto
 
-type PurchasedItem struct {
+type PurchasedItemData struct {
+}
+
+type UpdatePurchasedItemReq struct {
 }
 
 type PurchasedItemReq struct {

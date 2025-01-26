@@ -1,5 +1,11 @@
 package dto
 
+type ProductFilter struct {
+}
+
+type UpdateProductReq struct {
+}
+
 type Product struct {
 	Name     string `json:"name" validate:"required,min=4,max=32"`
 	Category string `json:"category" validate:"required,oneof=Food Beverage Clothes Furniture Tools"`

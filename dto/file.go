@@ -1,6 +1,6 @@
 package dto
 
-type File struct {
+type FileFilter struct {
 }
 
 type FileReq struct {

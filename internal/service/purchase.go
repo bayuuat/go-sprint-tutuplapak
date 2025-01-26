@@ -21,8 +21,7 @@ type PurchaseService interface {
 }
 
 func NewPurchase(cnf *config.Config,
-	purchaseRepository repository.PurchaseRepository,
-	purchaseTypesRepository repository.PurchaseTypesRepository) PurchaseService {
+	purchaseRepository repository.PurchaseRepository) PurchaseService {
 	return &purchaseService{
 		cnf:                cnf,
 		purchaseRepository: purchaseRepository,
@@ -30,17 +29,17 @@ func NewPurchase(cnf *config.Config,
 }
 
 func (ds purchaseService) GetPurchasesWithFilter(ctx context.Context, filter dto.PurchaseFilter, userId string) ([]dto.PurchaseData, int, error) {
-	return nil, nil, nil
+	return []dto.PurchaseData{}, 200, nil
 }
 
 func (ds *purchaseService) CreatePurchase(ctx context.Context, req dto.PurchaseReq, userId string) (dto.PurchaseData, int, error) {
-	return nil, nil, nil
+	return dto.PurchaseData{}, 200, nil
 }
 
 func (ds purchaseService) PatchPurchase(ctx context.Context, req dto.UpdatePurchaseReq, userId, id string) (dto.PurchaseData, int, error) {
-	return nil, nil, nil
+	return dto.PurchaseData{}, 200, nil
 }
 
 func (ds purchaseService) DeletePurchase(ctx context.Context, userId, id string) (dto.PurchaseData, int, error) {
-	return nil, nil, nil
+	return dto.PurchaseData{}, 200, nil
 }

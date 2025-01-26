@@ -3,14 +3,15 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/bayuuat/tutuplapak/domain"
-	"github.com/bayuuat/tutuplapak/dto"
-	"github.com/bayuuat/tutuplapak/internal/config"
-	"github.com/bayuuat/tutuplapak/internal/repository"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/bayuuat/tutuplapak/domain"
+	"github.com/bayuuat/tutuplapak/dto"
+	"github.com/bayuuat/tutuplapak/internal/config"
+	"github.com/bayuuat/tutuplapak/internal/repository"
 )
 
 type ProductService struct {
