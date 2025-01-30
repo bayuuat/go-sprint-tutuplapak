@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"log"
 
 	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/bayuuat/tutuplapak/dto"
@@ -15,7 +17,7 @@ type ProductRepository interface {
 	Put(ctx context.Context, product dto.Product) (err error)
 	FindAllWithFilter(ctx context.Context, filter *dto.ProductFilter) ([]domain.Product, error)
 	FindById(ctx context.Context, id string) (domain.Product, error)
-	Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, userId, id string) error
 }
 
 type productRepository struct {
@@ -54,11 +56,63 @@ func (d productRepository) FindById(ctx context.Context, id string) (product dom
 	return product, err
 }
 
-func (d productRepository) Delete(ctx context.Context, id string) error {
+func (d productRepository) Delete(ctx context.Context, userId, id string) error {
+	query := d.db.From("products").Where(goqu.Ex{
+		"product_id": id,
+	})
 
-	return errors.New("not implemented")
+	sql, _, err := query.Delete().ToSQL()
+	if err != nil {
+		log.Println("Error generating SQL:", err)
+		return fmt.Errorf("Error generating SQL: %w", err)
+	}
+
+	_, err = d.db.Exec(sql)
+	if err != nil {
+		log.Println("Error executing SQL:", err)
+		return fmt.Errorf("Error executing SQL: %w", err)
+	}
+
+	return err
 }
 
 func (d productRepository) FindAllWithFilter(ctx context.Context, filter *dto.ProductFilter) ([]domain.Product, error) {
-	return []domain.Product{}, errors.New("not implemented")
+	query := d.db.From("products")
+
+	if filter.Limit > 0 {
+		query = query.Limit(uint(filter.Limit))
+	} else {
+		query = query.Limit(5)
+	}
+	if filter.Offset > 0 {
+		query = query.Offset(uint(filter.Offset))
+	} else {
+		query = query.Offset(0)
+	}
+
+	if filter.ProductID != "" {
+		query = query.Where(goqu.Ex{"product_id": filter.ProductID})
+	}
+
+	if filter.SKU != "" {
+		query = query.Where(goqu.Ex{"sku": filter.SKU})
+	}
+
+	if filter.Category != "" {
+		query = query.Where(goqu.Ex{"category": filter.Category})
+	}
+
+	if filter.SortBy != "" {
+		switch {
+		case filter.SortBy == "newest":
+			query = query.Order(goqu.C("updated_at").Desc(), goqu.C("created_at").Desc())
+
+		case filter.SortBy == "cheapest":
+			query = query.Order(goqu.C("price").Asc())
+		}
+	}
+
+	var products []domain.Product
+	err := query.ScanStructsContext(ctx, &products)
+	return products, err
 }

@@ -38,7 +38,35 @@ func NewProductServicer(cnf *config.Config,
 }
 
 func (ds ProductService) GetProductsWithFilter(ctx context.Context, filter dto.ProductFilter, userId string) ([]dto.ProductData, int, error) {
-	return []dto.ProductData{}, 0, nil
+	products, err := ds.productRepository.FindAllWithFilter(ctx, &filter)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	var productData []dto.ProductData
+	for _, product := range products {
+		file, err := ds.fileService.fileRepository.GetFile(ctx, product.FileID)
+		if err != nil {
+			return nil, http.StatusNotFound, err
+		}
+
+		productData = append(productData, dto.ProductData{
+			ProductId:        strconv.Itoa(product.ProductID),
+			Name:             product.Name,
+			Category:         product.Category,
+			Qty:              product.Qty,
+			Price:            int(product.Price),
+			Sku:              product.SKU,
+			FileId:           strconv.Itoa(file.FileID),
+			FileUri:          file.FileURI,
+			FileThumbnailUri: file.FileThumbnailURI,
+			CreatedAt:        product.CreatedAt.Format(time.RFC3339Nano),
+			UpdatedAt:        product.UpdatedAt.Format(time.RFC3339Nano),
+		})
+	}
+
+	return productData, http.StatusOK, nil
+
 }
 
 func (ds ProductService) CreateProduct(ctx context.Context, req dto.ProductReq, userId string) (dto.ProductData, int, error) {
@@ -93,5 +121,24 @@ func (ds ProductService) validateProduct(ctx context.Context, req dto.ProductReq
 }
 
 func (ds ProductService) DeleteProduct(ctx context.Context, userId, id string) (dto.ProductData, int, error) {
-	return dto.ProductData{}, 0, nil
+	if id == "" {
+		return dto.ProductData{}, http.StatusNotFound, errors.New("Not found product ID")
+	}
+
+	product, err := ds.productRepository.FindById(ctx, id)
+
+	if err != nil {
+		return dto.ProductData{}, http.StatusInternalServerError, err
+	}
+
+	if product.ProductID == 0 {
+		return dto.ProductData{}, http.StatusInternalServerError, domain.ErrActivityNotFound
+	}
+
+	err = ds.productRepository.Delete(ctx, userId, id)
+	if err != nil {
+		return dto.ProductData{}, http.StatusInternalServerError, err
+	}
+
+	return dto.ProductData{}, http.StatusOK, err
 }

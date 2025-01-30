@@ -1,6 +1,13 @@
 package dto
 
 type ProductFilter struct {
+	Limit         int    `json:"limit"`
+	Offset        int    `json:"offset"`
+	ProductID     string `json:"product_id"`
+	SKU           string `json:"sku"`
+	Category      string `json:"category"`
+	SortBy        string `json:"sort_by"`
+	SoldInSeconds int    `json:"-"`
 }
 
 type UpdateProductReq struct {
