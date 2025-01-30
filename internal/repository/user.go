@@ -32,7 +32,7 @@ func (u userRepository) Save(ctx context.Context, user *domain.User) error {
 }
 
 func (u userRepository) Update(ctx context.Context, user *domain.User) error {
-	executor := u.db.Update("users").Where(goqu.C("id").Eq(user.Id)).Set(user).Executor()
+	executor := u.db.Update("users").Where(goqu.C("id").Eq(user.ID)).Set(user).Executor()
 	_, err := executor.ExecContext(ctx)
 	return err
 }
@@ -41,6 +41,7 @@ func (u userRepository) FindById(ctx context.Context, id string) (user domain.Us
 	dataset := u.db.From("users").Where(goqu.Ex{
 		"id": id,
 	})
+
 	_, err = dataset.ScanStructContext(ctx, &user)
 	return
 }

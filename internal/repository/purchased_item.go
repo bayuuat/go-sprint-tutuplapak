@@ -12,6 +12,7 @@ import (
 
 type PurchasedItemRepository interface {
 	Save(ctx context.Context, purchasedItem *domain.PurchasedItem) (*domain.PurchasedItem, error)
+	SavesTx(ctx context.Context, tx *goqu.TxDatabase, purchasedItems []domain.PurchasedItemReq) error
 	Update(ctx context.Context, userId string, purchasedItem goqu.Record) error
 	FindAllWithFilter(ctx context.Context, filter *dto.PurchasedItemFilter, userId string) ([]domain.PurchasedItem, error)
 	FindById(ctx context.Context, userId, id string) (domain.PurchasedItem, error)
@@ -30,6 +31,11 @@ func NewPurchasedItem(db *sql.DB) PurchasedItemRepository {
 
 func (d purchasedItemRepository) Save(ctx context.Context, purchasedItem *domain.PurchasedItem) (*domain.PurchasedItem, error) {
 	return &domain.PurchasedItem{}, errors.New("not implemented")
+}
+
+func (d purchasedItemRepository) SavesTx(ctx context.Context, tx *goqu.TxDatabase, purchasedItems []domain.PurchasedItemReq) error {
+	_, err := tx.Insert("purchased_item").Rows(purchasedItems).Executor().ExecContext(ctx)
+	return err
 }
 
 func (d purchasedItemRepository) Update(ctx context.Context, userId string, purchasedItem goqu.Record) error {

@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
+	"github.com/bayuuat/tutuplapak/dto"
 	"time"
 
-	"github.com/bayuuat/tutuplapak/internal/middleware"
 	"github.com/bayuuat/tutuplapak/internal/service"
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,14 +22,11 @@ func NewPurchase(app *fiber.App,
 
 	user := app.Group("/v1/purchase")
 
-	user.Use(middleware.JWTProtected)
 	user.Post("/", da.CreatePurchase)
-	user.Get("/", da.GetPurchases)
-	user.Patch("/:id?", da.UpdatePurchase)
-	user.Delete("/:id?", da.DeletePurchase)
+	user.Post("/:id?", da.CreatePayment)
 }
 
-func (da purchaseApi) GetPurchases(ctx *fiber.Ctx) error {
+func (da purchaseApi) CreatePayment(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
@@ -40,19 +37,15 @@ func (da purchaseApi) CreatePurchase(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
-	return ctx.Status(200).JSON(nil)
-}
+	var purchase dto.PurchaseReq
+	if err := ctx.BodyParser(&purchase); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{})
+	}
 
-func (da purchaseApi) UpdatePurchase(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
-	defer cancel()
+	res, code, err := da.purchaseService.CreatePurchase(c, purchase)
+	if err != nil {
+		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
+	}
 
-	return ctx.Status(200).JSON(nil)
-}
-
-func (da purchaseApi) DeletePurchase(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
-	defer cancel()
-
-	return ctx.Status(200).JSON(nil)
+	return ctx.Status(code).JSON(res)
 }

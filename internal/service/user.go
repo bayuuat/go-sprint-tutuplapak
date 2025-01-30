@@ -169,7 +169,7 @@ func (a userService) PatchUser(ctx context.Context, req dto.UpdateUserPreference
 	}, 200, nil
 }
 
-func floatPtrToIntPtr(floatPtr *float64) *int {
+func floatPtrToIntPtr(floatPtr *int) *int {
 	if floatPtr == nil {
 		return nil
 	}

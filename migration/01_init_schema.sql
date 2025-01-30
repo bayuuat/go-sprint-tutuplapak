@@ -28,16 +28,18 @@ CREATE TABLE IF NOT EXISTS public.products (
   sku VARCHAR(32) NOT NULL,
   file_id INTEGER NOT NULL REFERENCES public.files(file_id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  user_id character varying(255) NOT NULL
 );
 
 -- Create the purchase table without the generated column
 CREATE TABLE IF NOT EXISTS public.purchases (
     purchase_id SERIAL PRIMARY KEY,
-    total_price NUMERIC(10, 2) NOT NULL,
-    bank_account_name VARCHAR(255) NOT NULL,
-    bank_account_holder VARCHAR(255) NOT NULL,
-    bank_account_number VARCHAR(50) NOT NULL,
+    total_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    sender_name, character varying(255),
+    sender_contact_type character varying(255),
+    sender_contact_detail character varying(255),
+    user_ids INT[] NOT NULL DEFAULT {},
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -45,18 +47,10 @@ CREATE TABLE IF NOT EXISTS public.purchases (
 -- Table for storing purchased items
 CREATE TABLE IF NOT EXISTS public.purchased_items (
     item_id SERIAL PRIMARY KEY,
-    purchase_id INTEGER NOT NULL REFERENCES public.purchases(purchase_id) ON DELETE CASCADE,
+    purchase_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
-    name VARCHAR(32) NOT NULL,
-    category VARCHAR(50) NOT NULL,
     qty INTEGER NOT NULL,
-    price NUMERIC(10, 2) NOT NULL,
-    sku VARCHAR(32) NOT NULL,
-    file_id INTEGER NOT NULL REFERENCES public.files(file_id) ON DELETE CASCADE,
-    file_uri VARCHAR(255) NOT NULL,
-    file_thumbnail_uri VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    price NUMERIC(10, 2) NOT NULL
 );
 
 -- Create function to update updated_at

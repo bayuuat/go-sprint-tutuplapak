@@ -10,11 +10,11 @@ import (
 )
 
 type purchasedItemApi struct {
-	purchasedItemService service.PurchasedItemService
+	purchasedItemService service.PurchasedItemServicer
 }
 
 func NewPurchasedItem(app *fiber.App,
-	purchasedItemService service.PurchasedItemService) {
+	purchasedItemService service.PurchasedItemServicer) {
 
 	da := purchasedItemApi{
 		purchasedItemService: purchasedItemService,

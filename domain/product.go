@@ -7,7 +7,7 @@ type Product struct {
 	Name      string    `db:"name"`
 	Category  string    `db:"category"`
 	Qty       int       `db:"qty"`
-	Price     float64   `db:"price"`
+	Price     int       `db:"price"`
 	SKU       string    `db:"sku"`
 	FileID    int       `db:"file_id"`
 	CreatedAt time.Time `db:"created_at"`

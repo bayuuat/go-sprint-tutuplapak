@@ -10,7 +10,10 @@ import (
 )
 
 type PurchaseRepository interface {
-	Save(ctx context.Context, purchase *domain.Purchase) (*domain.Purchase, error)
+	BeginTx() (*goqu.TxDatabase, error)
+	CommitTx(tx *goqu.TxDatabase) error
+	SaveTx(ctx context.Context, tx *goqu.TxDatabase, purchase domain.PurchaseReq) (purchaseId int, err error)
+	RollbackTx(tx *goqu.TxDatabase) error
 	Update(ctx context.Context, purchase goqu.Record) error
 	FindAllWithFilter(ctx context.Context) ([]domain.Purchase, error)
 	FindById(ctx context.Context, id string) (domain.Purchase, error)
@@ -27,7 +30,26 @@ func NewPurchase(db *sql.DB) PurchaseRepository {
 	}
 }
 
-func (d purchaseRepository) Save(ctx context.Context, purchase *domain.Purchase) (*domain.Purchase, error) {
+func (d purchaseRepository) BeginTx() (*goqu.TxDatabase, error) {
+	tx, err := d.db.Begin()
+	return tx, err
+}
+
+func (d purchaseRepository) CommitTx(tx *goqu.TxDatabase) error {
+	return tx.Commit()
+}
+
+func (d purchaseRepository) RollbackTx(tx *goqu.TxDatabase) error {
+	return tx.Rollback()
+}
+
+func (d purchaseRepository) SaveTx(ctx context.Context, tx *goqu.TxDatabase, purchase domain.PurchaseReq) (purchaseId int, err error) {
+	insert := tx.Insert("purchases").Rows(purchase).Returning("purchase_id").Executor()
+	_, err = insert.ScanVal(&purchaseId)
+	return purchaseId, err
+}
+
+func (d purchaseRepository) Save(ctx context.Context) (*domain.Purchase, error) {
 	return &domain.Purchase{}, errors.New("not implemented")
 }
 
