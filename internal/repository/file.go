@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
@@ -15,6 +14,7 @@ type FileRepository interface {
 	Update(ctx context.Context, userId string, file goqu.Record) error
 	FindAllWithFilter(ctx context.Context, filter *dto.FileFilter, userId string) ([]domain.File, error)
 	FindById(ctx context.Context, id string) (domain.File, error)
+	FindByIds(ctx context.Context, ids []string) (files []domain.File, err error)
 	Delete(ctx context.Context, userId, id string) error
 }
 
@@ -22,9 +22,9 @@ type fileRepository struct {
 	db *goqu.Database
 }
 
-func NewFile(db *sql.DB) FileRepository {
+func NewFile(db *goqu.Database) FileRepository {
 	return &fileRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 
@@ -42,6 +42,11 @@ func (d fileRepository) FindById(ctx context.Context, id string) (file domain.Fi
 	})
 	_, err = dataset.ScanStructContext(ctx, &file)
 	return file, err
+}
+
+func (d fileRepository) FindByIds(ctx context.Context, ids []string) (files []domain.File, err error) {
+	err = d.db.From("files").Where(goqu.C("file_id").In(ids)).ScanStructsContext(ctx, &files)
+	return files, err
 }
 
 func (d fileRepository) Delete(ctx context.Context, userId, id string) error {

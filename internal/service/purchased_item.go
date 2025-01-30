@@ -2,44 +2,71 @@ package service
 
 import (
 	"context"
-
+	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/bayuuat/tutuplapak/dto"
 	"github.com/bayuuat/tutuplapak/internal/config"
 	"github.com/bayuuat/tutuplapak/internal/repository"
+	"github.com/doug-martin/goqu/v9"
+	"net/http"
 )
 
-type purchasedItemService struct {
+type PurchasedItemService struct {
 	cnf                     *config.Config
 	purchasedItemRepository repository.PurchasedItemRepository
+	ProductService          ProductServicer
+	FileService             FileServicer
 }
 
-type PurchasedItemService interface {
-	GetPurchasedItemsWithFilter(ctx context.Context, filter dto.PurchasedItemFilter, userId string) ([]dto.PurchasedItemData, int, error)
-	CreatePurchasedItem(ctx context.Context, req dto.PurchasedItemReq, userId string) (dto.PurchasedItemData, int, error)
-	PatchPurchasedItem(ctx context.Context, req dto.UpdatePurchasedItemReq, userId, id string) (dto.PurchasedItemData, int, error)
-	DeletePurchasedItem(ctx context.Context, user_id, id string) (dto.PurchasedItemData, int, error)
+type PurchasedItemServicer interface {
+	CreatePurchasedItemsTx(ctx context.Context, tx *goqu.TxDatabase, req []dto.PurchasedItemReq) ([]dto.ProductData, map[string]int, int, error)
 }
 
-func NewPurchasedItem(cnf *config.Config,
-	purchasedItemRepository repository.PurchasedItemRepository) PurchasedItemService {
-	return &purchasedItemService{
+func NewPurchasedItemServicer(cnf *config.Config,
+	purchasedItemRepository repository.PurchasedItemRepository,
+	productService ProductServicer,
+	fileService FileService,
+) PurchasedItemServicer {
+	return &PurchasedItemService{
 		cnf:                     cnf,
 		purchasedItemRepository: purchasedItemRepository,
+		ProductService:          productService,
+		FileService:             fileService,
 	}
 }
 
-func (ds purchasedItemService) GetPurchasedItemsWithFilter(ctx context.Context, filter dto.PurchasedItemFilter, userId string) ([]dto.PurchasedItemData, int, error) {
-	return []dto.PurchasedItemData{}, 200, nil
-}
+func (ds *PurchasedItemService) CreatePurchasedItemsTx(ctx context.Context, tx *goqu.TxDatabase, req []dto.PurchasedItemReq) (
+	purchasedItems []dto.ProductData, totalPerSeller map[string]int, code int, err error) {
+	productIds := make([]string, len(req))
+	for i, purchasedItem := range req {
+		productIds[i] = purchasedItem.ProductID
+	}
 
-func (ds *purchasedItemService) CreatePurchasedItem(ctx context.Context, req dto.PurchasedItemReq, userId string) (dto.PurchasedItemData, int, error) {
-	return dto.PurchasedItemData{}, 200, nil
-}
+	products, code, err := ds.ProductService.GetProducts(ctx, productIds)
+	if err != nil {
+		return nil, nil, code, err
+	}
 
-func (ds purchasedItemService) PatchPurchasedItem(ctx context.Context, req dto.UpdatePurchasedItemReq, userId, id string) (dto.PurchasedItemData, int, error) {
-	return dto.PurchasedItemData{}, 200, nil
-}
+	// TODO: Check stock?
 
-func (ds purchasedItemService) DeletePurchasedItem(ctx context.Context, userId, id string) (dto.PurchasedItemData, int, error) {
-	return dto.PurchasedItemData{}, 200, nil
+	price := make(map[string]int)
+	for _, product := range products {
+		price[product.ProductId] = product.Price
+	}
+
+	productDbInsert := make([]domain.PurchasedItemReq, len(req))
+	for _, productReq := range req {
+		productDbInsert = append(productDbInsert, domain.PurchasedItemReq{
+			PurchaseID: productReq.PurchaseID,
+			ProductID:  productReq.ProductID,
+			Qty:        productReq.Qty,
+			Price:      price[productReq.ProductID],
+		})
+	}
+
+	err = ds.purchasedItemRepository.SavesTx(ctx, tx, productDbInsert)
+	if err != nil {
+		return nil, nil, http.StatusInternalServerError, err
+	}
+
+	return products, nil, http.StatusCreated, nil
 }

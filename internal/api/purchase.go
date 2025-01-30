@@ -2,19 +2,21 @@ package api
 
 import (
 	"context"
+	"github.com/bayuuat/tutuplapak/dto"
+	"github.com/bayuuat/tutuplapak/internal/utils"
+	"net/http"
 	"time"
 
-	"github.com/bayuuat/tutuplapak/internal/middleware"
 	"github.com/bayuuat/tutuplapak/internal/service"
 	"github.com/gofiber/fiber/v2"
 )
 
 type purchaseApi struct {
-	purchaseService service.PurchaseService
+	purchaseService service.PurchaseServicer
 }
 
 func NewPurchase(app *fiber.App,
-	purchaseService service.PurchaseService) {
+	purchaseService service.PurchaseServicer) {
 
 	da := purchaseApi{
 		purchaseService: purchaseService,
@@ -22,14 +24,11 @@ func NewPurchase(app *fiber.App,
 
 	user := app.Group("/v1/purchase")
 
-	user.Use(middleware.JWTProtected)
 	user.Post("/", da.CreatePurchase)
-	user.Get("/", da.GetPurchases)
-	user.Patch("/:id?", da.UpdatePurchase)
-	user.Delete("/:id?", da.DeletePurchase)
+	user.Post("/:id?", da.CreatePayment)
 }
 
-func (da purchaseApi) GetPurchases(ctx *fiber.Ctx) error {
+func (da purchaseApi) CreatePayment(ctx *fiber.Ctx) error {
 	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
@@ -37,22 +36,23 @@ func (da purchaseApi) GetPurchases(ctx *fiber.Ctx) error {
 }
 
 func (da purchaseApi) CreatePurchase(ctx *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
-	return ctx.Status(200).JSON(nil)
-}
+	var purchase dto.PurchaseReq
 
-func (da purchaseApi) UpdatePurchase(ctx *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
-	defer cancel()
+	if err := ctx.BodyParser(&purchase); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{})
+	}
 
-	return ctx.Status(200).JSON(nil)
-}
+	if err := utils.Validate(purchase); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
+	}
 
-func (da purchaseApi) DeletePurchase(ctx *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
-	defer cancel()
+	res, code, err := da.purchaseService.CreatePurchase(c, &purchase)
+	if err != nil {
+		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
+	}
 
-	return ctx.Status(200).JSON(nil)
+	return ctx.Status(code).JSON(res)
 }

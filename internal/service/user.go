@@ -18,6 +18,7 @@ import (
 
 type UserService interface {
 	RegisterEmail(ctx context.Context, req dto.AuthEmailReq) (dto.AuthResponse, int, error)
+	GetUsersFilterColumn(ctx context.Context, ids []string, filter []string) ([]domain.User, int, error)
 	LoginEmail(ctx context.Context, req dto.AuthEmailReq) (dto.AuthResponse, int, error)
 	RegisterPhone(ctx context.Context, req dto.AuthPhoneReq) (dto.AuthResponse, int, error)
 	LoginPhone(ctx context.Context, req dto.AuthPhoneReq) (dto.AuthResponse, int, error)
@@ -208,6 +209,21 @@ func (a userService) GetUser(ctx context.Context, email string) (dto.UserData, i
 	}
 
 	return dto.UserData{}, http.StatusOK, nil
+}
+
+func (a userService) GetUsersFilterColumn(ctx context.Context, ids []string, filter []string) ([]domain.User, int, error) {
+	preparedFilter := make([]interface{}, len(filter))
+	for i := range preparedFilter {
+		preparedFilter[i] = filter[i]
+	}
+
+	users, err := a.userRepository.FindByColumns(ctx, ids, preparedFilter)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return users, http.StatusOK, nil
 }
 
 func (a userService) PatchUser(ctx context.Context, req dto.UpdateUser, id string) (dto.UserData, int, error) {

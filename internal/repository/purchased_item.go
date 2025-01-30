@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
@@ -12,6 +11,7 @@ import (
 
 type PurchasedItemRepository interface {
 	Save(ctx context.Context, purchasedItem *domain.PurchasedItem) (*domain.PurchasedItem, error)
+	SavesTx(ctx context.Context, tx *goqu.TxDatabase, purchasedItems []domain.PurchasedItemReq) error
 	Update(ctx context.Context, userId string, purchasedItem goqu.Record) error
 	FindAllWithFilter(ctx context.Context, filter *dto.PurchasedItemFilter, userId string) ([]domain.PurchasedItem, error)
 	FindById(ctx context.Context, userId, id string) (domain.PurchasedItem, error)
@@ -22,14 +22,19 @@ type purchasedItemRepository struct {
 	db *goqu.Database
 }
 
-func NewPurchasedItem(db *sql.DB) PurchasedItemRepository {
+func NewPurchasedItem(db *goqu.Database) PurchasedItemRepository {
 	return &purchasedItemRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 
 func (d purchasedItemRepository) Save(ctx context.Context, purchasedItem *domain.PurchasedItem) (*domain.PurchasedItem, error) {
 	return &domain.PurchasedItem{}, errors.New("not implemented")
+}
+
+func (d purchasedItemRepository) SavesTx(ctx context.Context, tx *goqu.TxDatabase, purchasedItems []domain.PurchasedItemReq) error {
+	_, err := tx.Insert("purchased_items").Rows(purchasedItems).Executor().ExecContext(ctx)
+	return err
 }
 
 func (d purchasedItemRepository) Update(ctx context.Context, userId string, purchasedItem goqu.Record) error {

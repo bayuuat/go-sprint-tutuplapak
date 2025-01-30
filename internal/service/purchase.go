@@ -2,44 +2,111 @@ package service
 
 import (
 	"context"
-
+	"errors"
+	"fmt"
+	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/bayuuat/tutuplapak/dto"
 	"github.com/bayuuat/tutuplapak/internal/config"
 	"github.com/bayuuat/tutuplapak/internal/repository"
+	"net/http"
+	"strconv"
 )
 
-type purchaseService struct {
-	cnf                *config.Config
-	purchaseRepository repository.PurchaseRepository
+type PurchaseService struct {
+	cnf                  *config.Config
+	purchaseRepository   repository.PurchaseRepository
+	purchasedItemService PurchasedItemServicer
+	userService          UserService
 }
 
-type PurchaseService interface {
-	GetPurchasesWithFilter(ctx context.Context, filter dto.PurchaseFilter, userId string) ([]dto.PurchaseData, int, error)
-	CreatePurchase(ctx context.Context, req dto.PurchaseReq, userId string) (dto.PurchaseData, int, error)
-	PatchPurchase(ctx context.Context, req dto.UpdatePurchaseReq, userId, id string) (dto.PurchaseData, int, error)
-	DeletePurchase(ctx context.Context, user_id, id string) (dto.PurchaseData, int, error)
+type PurchaseServicer interface {
+	CreatePurchase(ctx context.Context, req *dto.PurchaseReq) (dto.PurchaseData, int, error)
+	CreatePayment(ctx context.Context, req dto.PurchasedItemReq) (int, error)
 }
 
-func NewPurchase(cnf *config.Config,
-	purchaseRepository repository.PurchaseRepository) PurchaseService {
-	return &purchaseService{
-		cnf:                cnf,
-		purchaseRepository: purchaseRepository,
+func NewPurchaseServicer(cnf *config.Config,
+	purchaseRepository repository.PurchaseRepository,
+	purchasedItemService PurchasedItemServicer,
+	userService UserService,
+) PurchaseServicer {
+	return PurchaseService{
+		cnf:                  cnf,
+		purchaseRepository:   purchaseRepository,
+		purchasedItemService: purchasedItemService,
+		userService:          userService,
 	}
 }
 
-func (ds purchaseService) GetPurchasesWithFilter(ctx context.Context, filter dto.PurchaseFilter, userId string) ([]dto.PurchaseData, int, error) {
-	return []dto.PurchaseData{}, 200, nil
+func (ds PurchaseService) CreatePurchase(ctx context.Context, req *dto.PurchaseReq) (dto.PurchaseData, int, error) {
+	tx, err := ds.purchaseRepository.BeginTx()
+	if err != nil {
+		return dto.PurchaseData{}, http.StatusInternalServerError, err
+	}
+
+	purchaseId, err := ds.purchaseRepository.SaveTx(ctx, tx, domain.PurchaseReq{
+		SenderName:          req.SenderName,
+		SenderContactType:   req.SenderContactType,
+		SenderContactDetail: req.SenderContactDetail,
+	})
+
+	fmt.Println("purchaseId:", purchaseId)
+	if err != nil {
+		err2 := ds.purchaseRepository.RollbackTx(tx)
+		if err2 != nil {
+			err = fmt.Errorf("failed to rollback transaction: %w; %w", err2, err)
+		}
+		return dto.PurchaseData{}, http.StatusInternalServerError, err
+	}
+
+	for _, purchaseItem := range req.PurchasedItemsReq {
+		purchaseItem.PurchaseID = strconv.Itoa(purchaseId)
+	}
+
+	purchasedItems, totalPerSeller, code, err := ds.purchasedItemService.CreatePurchasedItemsTx(ctx, tx, req.PurchasedItemsReq)
+	if err != nil {
+		err2 := ds.purchaseRepository.RollbackTx(tx)
+		if err2 != nil {
+			err = fmt.Errorf("failed to rollback transaction: %w; %w", err2, err)
+		}
+		return dto.PurchaseData{}, code, err
+	}
+
+	sellerIds := getSellerIds(totalPerSeller)
+	userFilter := []string{"id", "bank_account_name", "bank_account_holder", "bank_account_number"}
+	sellersData, code, err := ds.userService.GetUsersFilterColumn(ctx, sellerIds, userFilter)
+	if err != nil {
+		return dto.PurchaseData{}, http.StatusInternalServerError, err
+	}
+
+	paymentDetails := make([]dto.PaymentDetail, len(sellersData))
+	for i, seller := range sellersData {
+		paymentDetails[i] = dto.PaymentDetail{
+			PaymentDetailData: dto.PaymentDetailData{
+				BankAccountName:   *seller.BankAccountName,
+				BankAccountHolder: *seller.BankAccountHolder,
+				BankAccountNumber: *seller.BankAccountNumber,
+			},
+			TotalPrice: totalPerSeller[seller.Id],
+		}
+	}
+
+	return dto.PurchaseData{
+		PurchaseID:     strconv.Itoa(purchaseId),
+		PurchasedItems: purchasedItems,
+		PaymentDetails: paymentDetails,
+	}, http.StatusCreated, nil
 }
 
-func (ds *purchaseService) CreatePurchase(ctx context.Context, req dto.PurchaseReq, userId string) (dto.PurchaseData, int, error) {
-	return dto.PurchaseData{}, 200, nil
+func (ds PurchaseService) CreatePayment(ctx context.Context, req dto.PurchasedItemReq) (int, error) {
+	return 0, errors.New("not implemented")
 }
 
-func (ds purchaseService) PatchPurchase(ctx context.Context, req dto.UpdatePurchaseReq, userId, id string) (dto.PurchaseData, int, error) {
-	return dto.PurchaseData{}, 200, nil
-}
-
-func (ds purchaseService) DeletePurchase(ctx context.Context, userId, id string) (dto.PurchaseData, int, error) {
-	return dto.PurchaseData{}, 200, nil
+func getSellerIds(totalPerSeller map[string]int) (sellerIds []string) {
+	sellerIds = make([]string, len(totalPerSeller))
+	i := 0
+	for k := range totalPerSeller {
+		sellerIds[i] = k
+		i++
+	}
+	return
 }
