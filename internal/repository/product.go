@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
@@ -23,9 +22,9 @@ type productRepository struct {
 	db *goqu.Database
 }
 
-func NewProduct(db *sql.DB) ProductRepository {
+func NewProduct(db *goqu.Database) ProductRepository {
 	return &productRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 
@@ -57,6 +56,7 @@ func (d productRepository) FindById(ctx context.Context, id string) (product dom
 
 func (d productRepository) FindByIds(ctx context.Context, ids []string) (products []domain.Product, err error) {
 	err = d.db.From("products").Where(goqu.C("product_id").In(ids)).ScanStructsContext(ctx, &products)
+
 	return products, err
 }
 

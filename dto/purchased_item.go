@@ -1,9 +1,9 @@
 package dto
 
 type PurchasedItemReq struct {
-	ProductID  string `json:"product_id" validate:"required"`
+	ProductID  string `json:"productId" validate:"required"`
 	Qty        int    `json:"qty" validate:"required,min=2"`
-	PurchaseID string `json:"purchaseID,omitempty" validate:"required,min=2,omitempty"`
+	PurchaseID string `json:"purchaseID,omitempty" validate:"min=2,omitempty"`
 }
 
 type PurchasedItemFilter struct {

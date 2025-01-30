@@ -6,13 +6,17 @@ import (
 	"github.com/bayuuat/tutuplapak/internal/connection"
 	"github.com/bayuuat/tutuplapak/internal/repository"
 	"github.com/bayuuat/tutuplapak/internal/service"
+	"github.com/doug-martin/goqu/v9"
 	"github.com/gofiber/fiber/v2"
+	"log"
 )
 
 func main() {
 	cnf := config.Get()
 	app := fiber.New()
-	dbConnection := connection.GetDatabase(cnf.Database)
+
+	dbConnection := goqu.New("postgres", connection.GetDatabase(cnf.Database))
+	dbConnection.Logger(log.Default())
 
 	userRepository := repository.NewUser(dbConnection)
 	authService := service.NewUser(cnf, userRepository)
@@ -35,5 +39,6 @@ func main() {
 
 	api.NewAws(app)
 
+	// TODO TOMORROW: Add stock check, omitempty db, senderValidation
 	_ = app.Listen(cnf.Server.Host + ":" + cnf.Server.Port)
 }

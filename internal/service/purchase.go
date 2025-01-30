@@ -49,6 +49,7 @@ func (ds PurchaseService) CreatePurchase(ctx context.Context, req *dto.PurchaseR
 		SenderContactDetail: req.SenderContactDetail,
 	})
 
+	fmt.Println("purchaseId:", purchaseId)
 	if err != nil {
 		err2 := ds.purchaseRepository.RollbackTx(tx)
 		if err2 != nil {

@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
-
 	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/doug-martin/goqu/v9"
 )
@@ -21,9 +19,9 @@ type userRepository struct {
 	db *goqu.Database
 }
 
-func NewUser(db *sql.DB) UserRepository {
+func NewUser(db *goqu.Database) UserRepository {
 	return &userRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 

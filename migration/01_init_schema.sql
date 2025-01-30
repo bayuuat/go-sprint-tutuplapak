@@ -36,10 +36,10 @@ CREATE TABLE IF NOT EXISTS public.products (
 CREATE TABLE IF NOT EXISTS public.purchases (
     purchase_id SERIAL PRIMARY KEY,
     total_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
-    sender_name, character varying(255),
+    sender_name character varying(255),
     sender_contact_type character varying(255),
     sender_contact_detail character varying(255),
-    user_ids INT[] NOT NULL DEFAULT {},
+    user_ids INT[] NOT NULL DEFAULT array[]::INT[],
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS public.purchased_items (
     purchase_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     qty INTEGER NOT NULL,
-    price NUMERIC(10, 2) NOT NULL
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0
 );
 
 -- Create function to update updated_at

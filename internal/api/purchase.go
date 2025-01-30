@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 	"github.com/bayuuat/tutuplapak/dto"
+	"github.com/bayuuat/tutuplapak/internal/utils"
+	"net/http"
 	"time"
 
 	"github.com/bayuuat/tutuplapak/internal/service"
@@ -38,8 +40,13 @@ func (da purchaseApi) CreatePurchase(ctx *fiber.Ctx) error {
 	defer cancel()
 
 	var purchase dto.PurchaseReq
+
 	if err := ctx.BodyParser(&purchase); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{})
+	}
+
+	if err := utils.Validate(purchase); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
 	res, code, err := da.purchaseService.CreatePurchase(c, &purchase)

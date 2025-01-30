@@ -2,9 +2,8 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
-
+	"fmt"
 	"github.com/bayuuat/tutuplapak/domain"
 	"github.com/doug-martin/goqu/v9"
 )
@@ -24,9 +23,9 @@ type purchaseRepository struct {
 	db *goqu.Database
 }
 
-func NewPurchase(db *sql.DB) PurchaseRepository {
+func NewPurchase(db *goqu.Database) PurchaseRepository {
 	return &purchaseRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 
@@ -44,8 +43,10 @@ func (d purchaseRepository) RollbackTx(tx *goqu.TxDatabase) error {
 }
 
 func (d purchaseRepository) SaveTx(ctx context.Context, tx *goqu.TxDatabase, purchase domain.PurchaseReq) (purchaseId int, err error) {
+	purchaseId = 0
 	insert := tx.Insert("purchases").Rows(purchase).Returning("purchase_id").Executor()
 	_, err = insert.ScanVal(&purchaseId)
+	fmt.Println(err)
 	return purchaseId, err
 }
 

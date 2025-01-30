@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
@@ -23,9 +22,9 @@ type purchasedItemRepository struct {
 	db *goqu.Database
 }
 
-func NewPurchasedItem(db *sql.DB) PurchasedItemRepository {
+func NewPurchasedItem(db *goqu.Database) PurchasedItemRepository {
 	return &purchasedItemRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 
@@ -34,7 +33,7 @@ func (d purchasedItemRepository) Save(ctx context.Context, purchasedItem *domain
 }
 
 func (d purchasedItemRepository) SavesTx(ctx context.Context, tx *goqu.TxDatabase, purchasedItems []domain.PurchasedItemReq) error {
-	_, err := tx.Insert("purchased_item").Rows(purchasedItems).Executor().ExecContext(ctx)
+	_, err := tx.Insert("purchased_items").Rows(purchasedItems).Executor().ExecContext(ctx)
 	return err
 }
 

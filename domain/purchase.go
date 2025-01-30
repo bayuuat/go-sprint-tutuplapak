@@ -15,9 +15,9 @@ type Purchase struct {
 }
 
 type PurchaseReq struct {
-	TotalPrice          int    `db:"total_price,omitempty"`
-	SenderName          string `db:"sender_name,omitempty"`
-	SenderContactType   string `db:"sender_contact_type,omitempty"`
-	SenderContactDetail string `db:"sender_contact_detail,omitempty"`
-	UserIds             []int  `db:"user_ids,omitempty"`
+	TotalPrice          int    `db:"total_price" goqu:"omitempty"`
+	SenderName          string `db:"sender_name" goqu:"omitempty"`
+	SenderContactType   string `db:"sender_contact_type" goqu:"omitempty"`
+	SenderContactDetail string `db:"sender_contact_detail" goqu:"omitempty"`
+	UserIds             []int  `db:"user_ids" goqu:"omitempty"`
 }

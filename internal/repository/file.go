@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/bayuuat/tutuplapak/domain"
@@ -23,9 +22,9 @@ type fileRepository struct {
 	db *goqu.Database
 }
 
-func NewFile(db *sql.DB) FileRepository {
+func NewFile(db *goqu.Database) FileRepository {
 	return &fileRepository{
-		db: goqu.New("default", db),
+		db: db,
 	}
 }
 
