@@ -10,11 +10,11 @@ import (
 )
 
 type purchaseApi struct {
-	purchaseService service.PurchaseService
+	purchaseService service.PurchaseServicer
 }
 
 func NewPurchase(app *fiber.App,
-	purchaseService service.PurchaseService) {
+	purchaseService service.PurchaseServicer) {
 
 	da := purchaseApi{
 		purchaseService: purchaseService,
@@ -26,17 +26,15 @@ func NewPurchase(app *fiber.App,
 	user.Post("/:id?", da.CreatePayment)
 }
 
-
 func (da purchaseApi) CreatePayment(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)
 }
-  
 
 func (da purchaseApi) CreatePurchase(ctx *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	var purchase dto.PurchaseReq
@@ -44,7 +42,7 @@ func (da purchaseApi) CreatePurchase(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(fiber.Map{})
 	}
 
-	res, code, err := da.purchaseService.CreatePurchase(c, purchase)
+	res, code, err := da.purchaseService.CreatePurchase(c, &purchase)
 	if err != nil {
 		return ctx.Status(code).JSON(dto.ErrorResponse{Message: err.Error()})
 	}

@@ -23,7 +23,7 @@ type PurchasedItemServicer interface {
 
 func NewPurchasedItemServicer(cnf *config.Config,
 	purchasedItemRepository repository.PurchasedItemRepository,
-	productService ProductService,
+	productService ProductServicer,
 	fileService FileService,
 ) PurchasedItemServicer {
 	return &PurchasedItemService{

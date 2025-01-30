@@ -15,8 +15,8 @@ import (
 type PurchaseService struct {
 	cnf                  *config.Config
 	purchaseRepository   repository.PurchaseRepository
-	purchasedItemService PurchasedItemService
-	userService          userService
+	purchasedItemService PurchasedItemServicer
+	userService          UserService
 }
 
 type PurchaseServicer interface {
@@ -26,8 +26,8 @@ type PurchaseServicer interface {
 
 func NewPurchaseServicer(cnf *config.Config,
 	purchaseRepository repository.PurchaseRepository,
-	purchasedItemService PurchasedItemService,
-	userService userService,
+	purchasedItemService PurchasedItemServicer,
+	userService UserService,
 ) PurchaseServicer {
 	return PurchaseService{
 		cnf:                  cnf,
@@ -72,7 +72,7 @@ func (ds PurchaseService) CreatePurchase(ctx context.Context, req *dto.PurchaseR
 
 	sellerIds := getSellerIds(totalPerSeller)
 	userFilter := []string{"id", "bank_account_name", "bank_account_holder", "bank_account_number"}
-	sellersData, code, err := ds.userService.GetUsersFilter(ctx, sellerIds, userFilter)
+	sellersData, code, err := ds.userService.GetUsersFilterColumn(ctx, sellerIds, userFilter)
 	if err != nil {
 		return dto.PurchaseData{}, http.StatusInternalServerError, err
 	}
@@ -80,8 +80,12 @@ func (ds PurchaseService) CreatePurchase(ctx context.Context, req *dto.PurchaseR
 	paymentDetails := make([]dto.PaymentDetail, len(sellersData))
 	for i, seller := range sellersData {
 		paymentDetails[i] = dto.PaymentDetail{
-			PaymentDetailData: sellersData[i],
-			TotalPrice:        totalPerSeller[seller.SellerID],
+			PaymentDetailData: dto.PaymentDetailData{
+				BankAccountName:   *seller.BankAccountName,
+				BankAccountHolder: *seller.BankAccountHolder,
+				BankAccountNumber: *seller.BankAccountNumber,
+			},
+			TotalPrice: totalPerSeller[seller.Id],
 		}
 	}
 

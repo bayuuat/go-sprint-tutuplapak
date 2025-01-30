@@ -12,6 +12,7 @@ type UserRepository interface {
 	Save(ctx context.Context, user *domain.User) error
 	Update(ctx context.Context, user *domain.User) error
 	FindById(ctx context.Context, id string) (domain.User, error)
+	FindByColumns(ctx context.Context, ids []string, filter []interface{}) (user []domain.User, err error)
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 }
@@ -33,7 +34,7 @@ func (u userRepository) Save(ctx context.Context, user *domain.User) error {
 }
 
 func (u userRepository) Update(ctx context.Context, user *domain.User) error {
-	executor := u.db.Update("users").Where(goqu.C("id").Eq(user.ID)).Set(user).Executor()
+	executor := u.db.Update("users").Where(goqu.C("id").Eq(user.Id)).Set(user).Executor()
 	_, err := executor.ExecContext(ctx)
 	return err
 }
@@ -44,6 +45,12 @@ func (u userRepository) FindById(ctx context.Context, id string) (user domain.Us
 	})
 
 	_, err = dataset.ScanStructContext(ctx, &user)
+	return
+}
+
+func (u userRepository) FindByColumns(ctx context.Context, ids []string, filter []interface{}) (user []domain.User, err error) {
+	dataset := u.db.From("users").Select(filter...).Where(goqu.C("id").In(ids))
+	err = dataset.ScanStructsContext(ctx, &user)
 	return
 }
 
