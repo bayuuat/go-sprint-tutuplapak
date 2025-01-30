@@ -13,9 +13,10 @@ import (
 type FileRepository interface {
 	Save(ctx context.Context, file *domain.File) (*domain.File, error)
 	Update(ctx context.Context, userId string, file goqu.Record) error
-	FindAllWithFilter(ctx context.Context, filter *dto.FileFilter, userId string) ([]domain.File, error)
+	FindAllWithFilter(ctx context.Context, filter *dto.FileFilter) ([]domain.File, error)
 	FindById(ctx context.Context, id string) (domain.File, error)
 	Delete(ctx context.Context, userId, id string) error
+	GetFile(ctx context.Context, fileID int) (domain.File, error)
 }
 
 type fileRepository struct {
@@ -48,6 +49,25 @@ func (d fileRepository) Delete(ctx context.Context, userId, id string) error {
 	return errors.New("not implemented")
 }
 
-func (d fileRepository) FindAllWithFilter(ctx context.Context, filter *dto.FileFilter, userId string) ([]domain.File, error) {
-	return []domain.File{}, errors.New("not implemented")
+func (d fileRepository) FindAllWithFilter(ctx context.Context, filter *dto.FileFilter) ([]domain.File, error) {
+	// return []domain.File{}, errors.New("not implemented")
+	query := d.db.From("files")
+
+	var files []domain.File
+	err := query.ScanStructsContext(ctx, &files)
+	return files, err
+}
+
+func (d fileRepository) GetFile(ctx context.Context, fileID int) (domain.File, error) {
+	var file domain.File
+
+	_, err := d.db.From("files").
+		Where(goqu.C("file_id").Eq(fileID)).
+		ScanStructContext(ctx, &file)
+
+	if err != nil {
+		return domain.File{}, err
+	}
+
+	return file, err
 }

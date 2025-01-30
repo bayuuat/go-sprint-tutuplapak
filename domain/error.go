@@ -3,7 +3,7 @@ package domain
 import "errors"
 
 var ErrBadRequest = errors.New("bad request")
-var ErrActivityNotFound = errors.New("activity not found")
+var ErrActivityNotFound = errors.New("product not found")
 var ErrUserNotFound = errors.New("user not found")
 var ErrInvalidCredential = errors.New("invalid credential")
 var ErrInvalidActionItem = errors.New("action unknown")
