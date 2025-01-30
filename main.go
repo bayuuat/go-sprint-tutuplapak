@@ -18,6 +18,14 @@ func main() {
 	authService := service.NewUser(cnf, userRepository)
 	api.NewUser(app, authService)
 
+	purchaseRepository := repository.NewPurchase(dbConnection)
+	purchaseService := service.NewPurchase(cnf, purchaseRepository)
+	api.NewPurchase(app, purchaseService)
+
+	purchasedItemRepository := repository.NewPurchasedItem(dbConnection)
+	purchasedItemService := service.NewPurchasedItem(cnf, purchasedItemRepository)
+	api.NewPurchasedItem(app, purchasedItemService)
+
 	fileRepository := repository.NewFile(dbConnection)
 	fileService := service.NewFile(cnf, fileRepository)
 

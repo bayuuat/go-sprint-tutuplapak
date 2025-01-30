@@ -3,7 +3,7 @@ package domain
 import "time"
 
 type User struct {
-	ID                string    `db:"id"`
+	Id                string    `db:"id"`
 	Email             *string   `db:"email"`
 	Password          string    `db:"password"`
 	Phone             *string   `db:"phone"`

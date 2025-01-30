@@ -30,28 +30,28 @@ func NewPurchasedItem(app *fiber.App,
 }
 
 func (da purchasedItemApi) GetPurchasedItems(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)
 }
 
 func (da purchasedItemApi) CreatePurchasedItem(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)
 }
 
 func (da purchasedItemApi) UpdatePurchasedItem(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)
 }
 
 func (da purchasedItemApi) DeletePurchasedItem(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)

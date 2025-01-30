@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/bayuuat/tutuplapak/dto"
 	"time"
+
+	"github.com/bayuuat/tutuplapak/dto"
 
 	"github.com/bayuuat/tutuplapak/internal/middleware"
 	"github.com/bayuuat/tutuplapak/internal/service"
@@ -31,14 +32,14 @@ func NewProduct(app *fiber.App,
 }
 
 func (da productApi) GetProducts(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)
 }
 
 func (da productApi) CreateProduct(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	_, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	return ctx.Status(200).JSON(nil)
